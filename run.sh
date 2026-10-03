@@ -24,7 +24,13 @@ URL="file://$PWD/www/index.html"
 
 # Its own profile, so it never shows the user's own tabs or a "restore
 # session?" bar, and the games' saves (localStorage) persist between boots.
-PROFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rpi-arcade/profile"
+# A snap (Ubuntu's chromium) may not touch hidden folders in $HOME such as
+# ~/.cache - it dies at once with "SingletonLock: Permission denied" - so
+# its profile goes in the one place a snap may write.
+case "$(command -v "$BROWSER")" in
+    */snap/bin/*) PROFILE="$HOME/snap/chromium/common/rpi-arcade-profile" ;;
+    *)            PROFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rpi-arcade/profile" ;;
+esac
 LOG="${XDG_CACHE_HOME:-$HOME/.cache}/rpi-arcade/chromium.log"
 mkdir -p "$PROFILE" "$(dirname "$LOG")"
 

@@ -110,6 +110,11 @@ cabinets fit the screen; a `null` entry draws as a locked slot.
   `~/.cache/rpi-arcade/chromium.log` and `./run.sh --gpu`.
 - **A game shows "needs the internet"** — the Play Centre games load from
   the web. Connect the Pi to Wi-Fi; the menu notices when it comes back.
+- **The arcade starts and vanishes at once** — look in
+  `~/.cache/rpi-arcade/chromium.log`. "SingletonLock: Permission denied"
+  means a snap Chromium was given a profile folder it may not write;
+  `run.sh` keeps a snap's profile under `~/snap/chromium/common`, so
+  `git pull` if you see that.
 - **The arcade doesn't start at boot** — the autostart entry is
   `~/.config/autostart/rpi-arcade.desktop`; check the Pi boots to the
   desktop logged in (`sudo raspi-config` → System Options → Boot / Auto
