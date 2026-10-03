@@ -19,6 +19,17 @@ if [ -z "${BROWSER:-}" ]; then
     exit 1
 fi
 
+# Chromium is told to use X11 (below). Under a Wayland desktop that is
+# XWayland, which can come up a little after the autostart entries run; if
+# DISPLAY isn't set yet, wait for its socket and point at it.
+if [ -z "${DISPLAY:-}" ] && [ -n "${WAYLAND_DISPLAY:-}" ]; then
+    for _ in $(seq 1 60); do
+        sock=$(ls /tmp/.X11-unix/X* 2>/dev/null | head -n 1)
+        [ -n "$sock" ] && { export DISPLAY=":${sock##*/X}"; break; }
+        sleep 0.5
+    done
+fi
+
 URL="file://$PWD/www/index.html"
 [ "${1:-}" = "--gpu" ] && URL="chrome://gpu"
 
