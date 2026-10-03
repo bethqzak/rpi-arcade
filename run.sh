@@ -45,6 +45,10 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/rpi-arcade/gpu" ]; then
     GPU_FLAGS="--ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy"
 fi
 
+# --ozone-platform-hint=auto: talk to a Wayland desktop (Ubuntu's GNOME)
+# directly instead of through XWayland. XWayland always presents a mouse,
+# so a page sees "pointer: fine" and games hide their touch controls
+# even when the touchscreen is the only pointer there is.
 # shellcheck disable=SC2086  # GPU_FLAGS expands to words on purpose
 exec "$BROWSER" \
     --kiosk \
@@ -56,6 +60,7 @@ exec "$BROWSER" \
     --disable-pinch \
     --overscroll-history-navigation=0 \
     --touch-events=enabled \
+    --ozone-platform-hint=auto \
     --autoplay-policy=no-user-gesture-required \
     --check-for-update-interval=31536000 \
     --password-store=basic \
