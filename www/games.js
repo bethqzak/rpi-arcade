@@ -2,6 +2,10 @@
 // repo, the rest are the Play Centre games at https://playyourgame206.github.io/
 // (the 3D ones are three.js, drawn with WebGL in the browser).
 //
+// "?pi=1" on a 3D game's address puts it in Pi mode: a render height a
+// Pi 4 can manage (480 lines; "?pi=600" for another), no shadows or
+// antialiasing, and the touch controls shown. Only the arcade adds it.
+//
 // To add or swap a game, edit an entry or replace the final slot:
 //
 //   { title: "My Game", blurb: "What it is", emoji: "🎮",
@@ -16,7 +20,7 @@ window.GAMES = [
     title: "3D Laundry Simulator",
     blurb: "Grab laundry off the conveyor, claim your plot, and build a washing machine empire.",
     emoji: "🧺",
-    url: "https://playyourgame206.github.io/laundry_simulator.html",
+    url: "https://playyourgame206.github.io/laundry_simulator.html?pi=1",
     screen: "linear-gradient(160deg, #123a5c 0%, #0d2038 100%)",
     chips: ["3D", "TYCOON"],
   },
@@ -25,7 +29,7 @@ window.GAMES = [
     title: "Coin Collector",
     blurb: "Explore a huge 3D world as a tabby cat and hunt down every gold coin.",
     emoji: "🪙",
-    url: "https://playyourgame206.github.io/coin_collector.html",
+    url: "https://playyourgame206.github.io/coin_collector.html?pi=1",
     screen: "linear-gradient(160deg, #2c5a1e 0%, #14290f 100%)",
     chips: ["3D", "ADVENTURE"],
   },
@@ -34,7 +38,7 @@ window.GAMES = [
     title: "PC Builder Tycoon",
     blurb: "Collect CPUs, GPUs and motherboards from the shop and build computers.",
     emoji: "🖥️",
-    url: "https://playyourgame206.github.io/pc_builder.html",
+    url: "https://playyourgame206.github.io/pc_builder.html?pi=1",
     screen: "linear-gradient(160deg, #3a1f5c 0%, #170d33 100%)",
     chips: ["3D", "TYCOON"],
   },
