@@ -55,8 +55,8 @@ fi
 # directly instead of through XWayland. XWayland always presents a mouse,
 # so a page sees "pointer: fine" and games hide their touch controls
 # even when the touchscreen is the only pointer there is.
-# --enable-wayland-ime / text-input v3: tell the desktop when a text field
-# has focus, so GNOME's on-screen keyboard pops up for a touch-only Pi.
+# (No --enable-wayland-ime: with it, and GNOME's screen keyboard on, the
+# touchscreen stopped reaching chromium at all. Typing is the open issue.)
 # shellcheck disable=SC2086  # GPU_FLAGS expands to words on purpose
 exec "$BROWSER" \
     --kiosk \
@@ -69,8 +69,6 @@ exec "$BROWSER" \
     --overscroll-history-navigation=0 \
     --touch-events=enabled \
     --ozone-platform-hint=auto \
-    --enable-wayland-ime \
-    --wayland-text-input-version=3 \
     --autoplay-policy=no-user-gesture-required \
     --check-for-update-interval=31536000 \
     --password-store=basic \

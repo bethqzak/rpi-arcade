@@ -94,9 +94,6 @@ elif [ -f /etc/gdm3/custom.conf ]; then
     if gsettings set org.gnome.desktop.session idle-delay 0 2>/dev/null &&
        gsettings set org.gnome.desktop.screensaver lock-enabled false 2>/dev/null; then
         echo "Screen blanking and the lock screen are off."
-        # A touch-only Pi needs GNOME's on-screen keyboard for the games'
-        # text fields (names, save codes).
-        gsettings set org.gnome.desktop.a11y.applications screen-keyboard-enabled true 2>/dev/null || true
     else
         echo "Couldn't change GNOME settings from here. In Settings > Power set"
         echo "Screen Blank to Never, and in Privacy > Screen Lock turn it off."

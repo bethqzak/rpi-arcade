@@ -110,10 +110,10 @@ cabinets fit the screen; a `null` entry draws as a locked slot.
   `~/.cache/rpi-arcade/chromium.log` and `./run.sh --gpu`.
 - **A game shows "needs the internet"** — the Play Centre games load from
   the web. Connect the Pi to Wi-Fi; the menu notices when it comes back.
-- **No on-screen keyboard in a game's text field** — the installer turns
-  on GNOME's screen keyboard (Settings > Accessibility > Typing > Screen
-  Keyboard) and `run.sh` lets Chromium ask for it; re-run `./install.sh`
-  if it was set up before that.
+- **No on-screen keyboard in a game's text field** — known gap. Turning
+  on GNOME's screen keyboard together with Chromium's Wayland text input
+  made the touchscreen stop reaching Chromium entirely, so neither is
+  enabled. Plug in a keyboard for the odd text field for now.
 - **The arcade starts and vanishes at once** — look in
   `~/.cache/rpi-arcade/chromium.log`. "SingletonLock: Permission denied"
   means a snap Chromium was given a profile folder it may not write;
