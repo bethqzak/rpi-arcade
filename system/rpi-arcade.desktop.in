@@ -1,0 +1,9 @@
+# Desktop autostart entry: installed to ~/.config/autostart/ by install.sh,
+# with __ARCADE_DIR__ filled in. The desktop session runs it after login.
+[Desktop Entry]
+Type=Application
+Name=Play Centre Arcade
+Comment=Start the arcade full-screen
+Exec=__ARCADE_DIR__/run.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true

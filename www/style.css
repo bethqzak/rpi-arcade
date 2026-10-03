@@ -1,0 +1,279 @@
+/* The arcade menu, in the Play Centre's colours and cabinet style
+   (https://playyourgame206.github.io/), laid out to fill one screen with
+   no scrolling: six cabinets, sized from the viewport, so it reads the
+   same on a 7" touchscreen and a TV. Nothing is downloaded: the Pi may be
+   offline and the menu must still come up. */
+:root {
+  --bg: #0b0d1a;
+  --card: #161a2e;
+  --card-border: #262c4a;
+  --neon-cyan: #00f2fe;
+  --neon-pink: #ff2e88;
+  --neon-yellow: #ffd60a;
+  --neon-green: #2eff7b;
+  --dim: #9aa3c7;
+  --dimmer: #4d557c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 85% 75%, rgba(255, 46, 136, 0.08) 0%, transparent 40%);
+  color: #fff;
+  font-family: "Segoe UI", "DejaVu Sans", "Noto Sans", Verdana, sans-serif;
+  user-select: none;
+  touch-action: manipulation;
+}
+
+.pixel {
+  position: fixed;
+  width: 1.2vmin; height: 1.2vmin;
+  opacity: 0.35;
+  animation: floaty 7s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes floaty {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2.5vmin) rotate(180deg); }
+}
+
+#menu {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 2vh 2.5vw 1.5vh;
+}
+
+header { text-align: center; }
+h1 {
+  font-size: 8vmin;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink), var(--neon-yellow), var(--neon-cyan));
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 5s linear infinite;
+  filter: drop-shadow(0 0 1.8vmin rgba(0, 242, 254, 0.5));
+}
+@keyframes shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+.tagline {
+  margin-top: 0.5vh;
+  color: var(--dim);
+  font-size: 2.6vmin;
+  letter-spacing: 0.1em;
+}
+.blink { animation: blink 1.2s steps(2) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+#grid {
+  flex: 1;
+  min-height: 0;
+  margin-top: 2vh;
+  display: grid;
+  gap: 2.2vmin;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+}
+@media (orientation: portrait) {
+  #grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.cab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  border: 0.45vmin solid var(--card-border);
+  border-radius: 2.2vmin;
+  background: var(--card);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+.cab.selected {
+  border-color: var(--neon-cyan);
+  box-shadow: 0 0 4vmin rgba(0, 242, 254, 0.35);
+  transform: scale(1.02);
+}
+.cab:active:not(.locked) { transform: scale(0.98); }
+.cab.locked { opacity: 0.85; cursor: default; }
+
+.badge {
+  position: absolute;
+  top: 1.4vmin; right: 1.4vmin;
+  padding: 0.5vmin 1.3vmin;
+  border-radius: 999px;
+  font-size: 1.7vmin;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  z-index: 2;
+}
+.badge.new { background: var(--neon-pink); color: #fff; box-shadow: 0 0 1.4vmin rgba(255, 46, 136, 0.7); animation: pulse 1.6s ease-in-out infinite; }
+.badge.soon { background: #2a3050; color: #8a93bb; }
+@keyframes pulse { 50% { transform: scale(1.12); } }
+
+.screen {
+  flex: 0 0 38%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11vmin;
+  position: relative;
+  overflow: hidden;
+}
+.screen::after { /* scanlines */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.18) 0px, rgba(0,0,0,0.18) 2px, transparent 2px, transparent 5px);
+  pointer-events: none;
+}
+.screen-emoji { transition: transform 0.25s ease; filter: drop-shadow(0 0.6vmin 1.2vmin rgba(0,0,0,0.5)); }
+.cab.selected .screen-emoji { transform: scale(1.2) rotate(-6deg); }
+.cab.locked .screen-emoji { opacity: 0.45; filter: grayscale(1); }
+
+.info {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1vmin;
+  padding: 1.6vmin 2vmin 1.8vmin;
+}
+.info h2 { font-size: 3.1vmin; font-weight: 900; letter-spacing: 0.02em; }
+.info p {
+  flex: 1;
+  color: var(--dim);
+  font-size: 2.1vmin;
+  line-height: 1.35;
+  overflow: hidden;
+}
+.meta { display: flex; gap: 0.8vmin; flex-wrap: wrap; }
+.chip {
+  font-size: 1.6vmin;
+  font-weight: 700;
+  padding: 0.4vmin 1.1vmin;
+  border-radius: 999px;
+  background: rgba(0, 242, 254, 0.12);
+  color: var(--neon-cyan);
+  border: 1px solid rgba(0, 242, 254, 0.3);
+}
+.play-btn {
+  margin-top: 0.4vmin;
+  text-align: center;
+  padding: 1.4vmin;
+  border-radius: 1.4vmin;
+  font-weight: 900;
+  font-size: 2.4vmin;
+  letter-spacing: 0.15em;
+  background: linear-gradient(135deg, var(--neon-cyan), #4facfe);
+  color: #06121f;
+  transition: all 0.2s;
+}
+.cab.selected .play-btn {
+  background: linear-gradient(135deg, var(--neon-green), #00b894);
+  box-shadow: 0 0 2vmin rgba(46, 255, 123, 0.6);
+}
+.cab.locked .play-btn { background: #232946; color: #616a94; box-shadow: none; }
+
+/* On a short screen (a 1024x600 panel) the blurb is the first to go. */
+@media (max-height: 650px) {
+  .info p { display: none; }
+  .screen { flex-basis: 42%; }
+}
+
+#status {
+  margin-top: 1.2vh;
+  text-align: center;
+  color: var(--dimmer);
+  font-size: 2.2vmin;
+}
+#status.bad { color: var(--neon-yellow); }
+
+/* The game layer: an iframe over everything, with a way back. */
+#game { position: absolute; inset: 0; z-index: 5; background: #000; }
+#game iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #000;
+}
+#loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dim);
+  font-size: 4vmin;
+}
+#close {
+  position: absolute;
+  top: 1.2vmin;
+  right: 1.2vmin;
+  width: 9vmin;
+  height: 9vmin;
+  min-width: 48px;
+  min-height: 48px;
+  border: 2px solid #ffffff55;
+  border-radius: 50%;
+  background: #00000088;
+  color: #ffffffcc;
+  font-size: 4.5vmin;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+}
+#close:active { background: var(--neon-pink); color: #fff; }
+
+/* A notice shown in place of a game that cannot open (no internet). */
+.notice {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vmin;
+  padding: 5vmin;
+  text-align: center;
+  background: var(--bg);
+}
+.notice h2 { color: var(--neon-yellow); font-size: 5vmin; }
+.notice p { font-size: 3.2vmin; }
+.notice .small { color: var(--dim); font-size: 2.6vmin; }
+
+#toast {
+  position: absolute;
+  left: 50%;
+  bottom: 6vh;
+  transform: translateX(-50%);
+  padding: 1.5vmin 3vmin;
+  border-radius: 1vmin;
+  background: #000000cc;
+  border: 1px solid var(--card-border);
+  font-size: 3vmin;
+  z-index: 9;
+}
+[hidden] { display: none !important; }

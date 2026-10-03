@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Play Centre Arcade</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- floating pixels, as on the Play Centre site -->
+<div class="pixel" style="left:6%;  top:18%; background:var(--neon-cyan);   animation-delay:0s;"></div>
+<div class="pixel" style="left:92%; top:12%; background:var(--neon-pink);   animation-delay:1.5s;"></div>
+<div class="pixel" style="left:12%; top:75%; background:var(--neon-yellow); animation-delay:3s;"></div>
+<div class="pixel" style="left:85%; top:65%; background:var(--neon-green);  animation-delay:4.5s;"></div>
+<div class="pixel" style="left:50%; top:8%;  background:var(--neon-pink);   animation-delay:2s;"></div>
+
+<main id="menu">
+  <header>
+    <h1>🕹️ Play Centre 🕹️</h1>
+    <p class="tagline">INSERT COIN TO PLAY <span class="blink">▮</span></p>
+  </header>
+  <div id="grid" role="list"></div>
+  <footer id="status"></footer>
+</main>
+
+<section id="game" hidden>
+  <p id="loading">Loading…</p>
+  <button id="close" type="button" aria-label="Back to the arcade">✕</button>
+</section>
+
+<div id="toast" hidden></div>
+
+<script src="games.js"></script>
+<script src="launcher.js"></script>
+</body>
+</html>
