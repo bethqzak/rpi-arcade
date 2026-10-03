@@ -85,6 +85,17 @@ if [ "${1:-}" = "--kiosk" ]; then
     fi
     # Let a plain login (not root) start the X server.
     printf 'allowed_users=anybody\nneeds_root_rights=yes\n' | sudo tee /etc/X11/Xwrapper.config >/dev/null
+    # An X config left over from an SPI panel (the old rpi-gamer's MPI3501)
+    # forces the plain framebuffer driver, which has no GPU: chromium then
+    # finds no EGL and the 3D games run in software. Set such files aside;
+    # Ubuntu's own generated config picks the GPU driver (modesetting).
+    for conf in /etc/X11/xorg.conf.d/*.conf; do
+        [ -f "$conf" ] || continue
+        if grep -q -i 'Driver *"fbdev"' "$conf"; then
+            echo "Setting aside $conf (forces the fbdev driver, no GPU)"
+            sudo mv "$conf" "$conf.disabled-by-rpi-arcade"
+        fi
+    done
     sudo usermod -aG input,video,render,tty "$USER"
     chmod +x run.sh system/kiosk.sh system/xinitrc system/wait-for-display.sh
     rm -f "$AUTOSTART"      # never both the desktop autostart and the service

@@ -130,6 +130,11 @@ cabinets fit the screen; a `null` entry draws as a locked slot.
   means a snap Chromium was given a profile folder it may not write;
   `run.sh` keeps a snap's profile under `~/snap/chromium/common`, so
   `git pull` if you see that.
+- **Kiosk mode: the status line says SwiftShader (software)** — X is on
+  the plain framebuffer driver, usually because of a leftover config in
+  `/etc/X11/xorg.conf.d/` from an SPI panel (`Driver "fbdev"`). The kiosk
+  installer sets those aside; `grep -E 'Loading .*_drv' /var/log/Xorg.0.log`
+  should name `modesetting_drv.so`, not `fbdev_drv.so`.
 - **Kiosk mode: black screen or a login prompt instead of the arcade** —
   `systemctl status rpi-arcade` says why; X's own complaints are in
   `~/.local/share/xorg/Xorg.0.log` and Chromium's in
