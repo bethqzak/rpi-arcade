@@ -29,28 +29,39 @@ rpi-arcade/
 
 ## Setup
 
-Works on **Ubuntu Desktop** and on **Raspberry Pi OS with desktop**. On the
-Pi, over ssh or in a terminal:
+Works on **Ubuntu** and **Raspberry Pi OS**, with or without a desktop.
+On the Pi, over ssh or in a terminal:
 
 ```bash
 git clone https://github.com/bethqzak/rpi-arcade.git
 cd rpi-arcade
-./install.sh
+./install.sh --kiosk
 sudo reboot
 ```
 
-The installer:
+**Kiosk mode** (`--kiosk`, recommended for a touch-only arcade) boots the
+Pi to the console and starts one bare X server on it with Chromium as its
+only program, the standard shape of a Pi kiosk. No desktop means no
+desktop touch gestures: GNOME treats a finger held still for a few
+seconds as a long press, takes it away from the game and knocks Chromium
+out of full screen. It also means no desktop compositor spending GPU time
+behind the game. The installer puts in the X server and window manager if
+missing, allows a normal login to start X, installs a systemd service on
+tty1 that restarts the arcade if it ever exits, and sets the Pi to boot to
+the console. From ssh, `sudo systemctl stop rpi-arcade` stops it and
+`start` brings it back.
 
-- retires the old `rpi-gamer` kiosk if it is there (its tty1 service, and
-  the boot-to-console setting it needed), so the desktop comes back;
-- installs Chromium if it is missing;
-- sets the Pi to log into the desktop automatically and never blank the
-  screen (via `raspi-config` on Raspberry Pi OS, GDM and GNOME settings on
-  Ubuntu);
-- adds a desktop autostart entry that runs `run.sh`.
+**Desktop mode** (`./install.sh` with no option) instead autostarts the
+arcade on top of the normal desktop, for a Pi that is also used as a
+computer. It retires a kiosk service if one is installed (this arcade's
+or the old `rpi-gamer`'s), sets the Pi to boot to the desktop logged in
+and never blank the screen (via `raspi-config` on Raspberry Pi OS, GDM
+and GNOME settings on Ubuntu), and adds a desktop autostart entry.
 
-To try it without rebooting: `./run.sh` from a terminal on the desktop.
-To undo the autostart: `./install.sh --remove`.
+Either way the installer installs Chromium if it is missing. To try the
+arcade from a desktop terminal without rebooting: `./run.sh`. To undo
+either mode: `./install.sh --remove` (and, after kiosk mode,
+`sudo systemctl set-default graphical.target` to get the desktop back).
 
 ### 3D speed: software first, then the GPU
 
@@ -75,7 +86,7 @@ reboots during a 3D game with the GPU on, that is the GPU driver, and
 | Any game         | ESC (Pac-Man only)          | Tap ✕ top-right               |
 | Pac-Man          | Arrows/WASD                 | D-pad, swipe, or tap to go    |
 | 3D games         | the game's own controls     | the game's own touch controls |
-| Leave the arcade | Alt+F4, or Shift+Q in the menu | —                          |
+| Leave the arcade | Alt+F4, or Shift+Q in the menu (desktop mode; in kiosk mode the arcade comes straight back, use `sudo systemctl stop rpi-arcade` over ssh) | — |
 
 ESC can't reach the launcher from inside a web game (the game's page owns
 the keyboard), so the ✕ is the way back from those. A game's own
@@ -119,7 +130,13 @@ cabinets fit the screen; a `null` entry draws as a locked slot.
   means a snap Chromium was given a profile folder it may not write;
   `run.sh` keeps a snap's profile under `~/snap/chromium/common`, so
   `git pull` if you see that.
-- **The arcade doesn't start at boot** — the autostart entry is
+- **Kiosk mode: black screen or a login prompt instead of the arcade** —
+  `systemctl status rpi-arcade` says why; X's own complaints are in
+  `~/.local/share/xorg/Xorg.0.log` and Chromium's in
+  `~/.cache/rpi-arcade/chromium.log`. The user must be in the `input`,
+  `video`, `render` and `tty` groups (the installer adds them; a reboot
+  applies it).
+- **The arcade doesn't start at boot (desktop mode)** — the autostart entry is
   `~/.config/autostart/rpi-arcade.desktop`; check the Pi boots to the
   desktop logged in (`sudo raspi-config` → System Options → Boot / Auto
   Login → Desktop Autologin). Chromium's output goes to

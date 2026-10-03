@@ -1,0 +1,18 @@
+#!/bin/sh
+# The X session for kiosk mode: no desktop, just a window manager that
+# makes every window full-screen and undecorated, and then the arcade.
+cd "$(dirname "$0")/.." || exit 1
+
+xset s off          # never blank the screen
+xset s noblank
+xset -dpms
+xsetroot -solid black 2>/dev/null
+
+# matchbox puts every window full-screen; without a window manager nobody
+# honours chromium's full-screen request and it opens as a floating window.
+if command -v matchbox-window-manager >/dev/null 2>&1; then
+    matchbox-window-manager -use_titlebar no -use_cursor no &
+    sleep 0.3
+fi
+
+exec ./run.sh

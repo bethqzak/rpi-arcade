@@ -5,7 +5,12 @@
 #   - start the arcade when the desktop comes up
 #   - never blank the screen
 #
-#   ./install.sh            set it up
+#   ./install.sh            set it up on top of the desktop (autostart)
+#   ./install.sh --kiosk    set it up with no desktop: one X server on tty1
+#                           with chromium as its only program (recommended
+#                           for a touch-only arcade: the desktop's touch
+#                           gestures grab a finger held still, and its
+#                           compositor costs frames)
 #   ./install.sh --gpu      let chromium use the Pi's GPU for the 3D games
 #                           (faster; turn it off again if the Pi becomes unstable)
 #   ./install.sh --no-gpu   back to the safe default: WebGL in software
@@ -22,12 +27,24 @@ AUTOSTART="${XDG_CONFIG_HOME:-$HOME/.config}/autostart/rpi-arcade.desktop"
 export PATH="$PATH:/snap/bin"
 
 GPU_FLAG="${XDG_CONFIG_HOME:-$HOME/.config}/rpi-arcade/gpu"
+UNIT=/etc/systemd/system/rpi-arcade.service
+
+remove_kiosk() {
+    if [ -f "$UNIT" ]; then
+        sudo systemctl disable --now rpi-arcade.service 2>/dev/null || true
+        sudo rm -f "$UNIT"
+        sudo systemctl daemon-reload
+        sudo systemctl enable getty@tty1.service 2>/dev/null || true
+    fi
+}
 
 case "${1:-}" in
     --remove)
         rm -f "$AUTOSTART"
-        echo "Removed $AUTOSTART. The arcade no longer starts at boot."
-        echo "(Autologin and screen blanking were left as they are.)"
+        remove_kiosk
+        echo "Removed the autostart and the kiosk service. The arcade no longer"
+        echo "starts at boot. To get the desktop back after kiosk mode:"
+        echo "  sudo systemctl set-default graphical.target && sudo reboot"
         exit 0 ;;
     --gpu)
         mkdir -p "$(dirname "$GPU_FLAG")" && : > "$GPU_FLAG"
@@ -46,27 +63,57 @@ if [ "$(id -u)" = 0 ]; then
     exit 1
 fi
 
-# --- retire the old rpi-gamer kiosk --------------------------------------
-# It ran a tty1 service and booted the Pi to the console; both would keep
-# the desktop (and so this arcade) from ever appearing.
-if [ -f /etc/systemd/system/rpi-arcade.service ]; then
-    echo "Removing the old rpi-gamer kiosk service (sudo)..."
-    sudo systemctl disable --now rpi-arcade.service 2>/dev/null || true
-    sudo rm -f /etc/systemd/system/rpi-arcade.service
-    sudo systemctl daemon-reload
-    sudo systemctl enable getty@tty1.service 2>/dev/null || true
-fi
-if have systemctl && [ "$(systemctl get-default 2>/dev/null)" != "graphical.target" ]; then
-    echo "Setting the Pi to boot to the desktop (sudo)..."
-    sudo systemctl set-default graphical.target
-fi
-
 # --- chromium -------------------------------------------------------------
 if ! have chromium && ! have chromium-browser && ! have google-chrome; then
     echo "Installing chromium..."
     sudo apt-get update
     # Raspberry Pi OS ships "chromium"; older releases and Ubuntu "chromium-browser".
     sudo apt-get install -y chromium || sudo apt-get install -y chromium-browser
+fi
+
+# --- kiosk mode: no desktop ----------------------------------------------
+if [ "${1:-}" = "--kiosk" ]; then
+    need=""
+    for pkg in xinit xserver-xorg x11-xserver-utils matchbox-window-manager; do
+        dpkg -s "$pkg" >/dev/null 2>&1 || need="$need $pkg"
+    done
+    if [ -n "$need" ]; then
+        echo "Installing$need..."
+        sudo apt-get update
+        # shellcheck disable=SC2086
+        sudo apt-get install -y $need
+    fi
+    # Let a plain login (not root) start the X server.
+    printf 'allowed_users=anybody\nneeds_root_rights=yes\n' | sudo tee /etc/X11/Xwrapper.config >/dev/null
+    sudo usermod -aG input,video,render,tty "$USER"
+    chmod +x run.sh system/kiosk.sh system/xinitrc system/wait-for-display.sh
+    rm -f "$AUTOSTART"      # never both the desktop autostart and the service
+    sed -e "s|__ARCADE_DIR__|$ARCADE_DIR|g" -e "s|__ARCADE_USER__|$USER|g" \
+        system/rpi-arcade.service.in | sudo tee "$UNIT" >/dev/null
+    sudo systemctl daemon-reload
+    sudo systemctl enable rpi-arcade.service
+    # Boot to the console, not the desktop: the desktop would take the screen.
+    sudo systemctl set-default multi-user.target
+    echo
+    echo "Kiosk mode installed. Reboot and the Pi comes up in the arcade:  sudo reboot"
+    echo "To stop it from ssh:        sudo systemctl stop rpi-arcade"
+    echo "To start it again:          sudo systemctl start rpi-arcade"
+    echo "To go back to the desktop:  ./install.sh --remove, then"
+    echo "                            sudo systemctl set-default graphical.target && sudo reboot"
+    exit 0
+fi
+
+# --- desktop mode ---------------------------------------------------------
+# Retire a kiosk service (this arcade's or the old rpi-gamer's): it ran on
+# tty1 and booted the Pi to the console; both would keep the desktop (and
+# so this arcade) from ever appearing.
+if [ -f "$UNIT" ]; then
+    echo "Removing the kiosk service (sudo)..."
+    remove_kiosk
+fi
+if have systemctl && [ "$(systemctl get-default 2>/dev/null)" != "graphical.target" ]; then
+    echo "Setting the Pi to boot to the desktop (sudo)..."
+    sudo systemctl set-default graphical.target
 fi
 
 # --- autostart ------------------------------------------------------------

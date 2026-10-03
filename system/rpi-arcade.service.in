@@ -1,0 +1,25 @@
+# Kiosk mode: one X server on tty1 with chromium as its only program, no
+# desktop. Installed by ./install.sh --kiosk, which fills in the
+# __PLACEHOLDERS__. The arcade is restarted if it ever exits.
+[Unit]
+Description=Play Centre Arcade (kiosk)
+After=systemd-user-sessions.service getty@tty1.service
+Conflicts=getty@tty1.service
+# A kiosk keeps trying: never trip the start-rate limit and give up.
+StartLimitIntervalSec=0
+
+[Service]
+User=__ARCADE_USER__
+SupplementaryGroups=input video render tty
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty
+UtmpIdentifier=tty1
+# HDMI can be detected a few seconds after boot; don't start before it is.
+ExecStartPre=__ARCADE_DIR__/system/wait-for-display.sh
+ExecStart=__ARCADE_DIR__/system/kiosk.sh
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
