@@ -51,10 +51,11 @@ if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/rpi-arcade/gpu" ]; then
     DISABLE_FEATURES="$DISABLE_FEATURES,Vulkan,DefaultANGLEVulkan,VulkanFromANGLE"
 fi
 
-# --ozone-platform-hint=auto: talk to a Wayland desktop (Ubuntu's GNOME)
-# directly instead of through XWayland. XWayland always presents a mouse,
-# so a page sees "pointer: fine" and games hide their touch controls
-# even when the touchscreen is the only pointer there is.
+# No --ozone-platform-hint=auto: on native Wayland, touches reached the
+# games unreliably (a tap that never completed, a finger whose release
+# never arrived), while through XWayland taps work. XWayland presents a
+# mouse, so pages hide their touch controls; the games' Pi mode (?pi=1)
+# shows them regardless, which is why Wayland is no longer needed.
 # (No --enable-wayland-ime: with it, and GNOME's screen keyboard on, the
 # touchscreen stopped reaching chromium at all. Typing is the open issue.)
 # shellcheck disable=SC2086  # GPU_FLAGS expands to words on purpose
@@ -68,7 +69,6 @@ exec "$BROWSER" \
     --disable-pinch \
     --overscroll-history-navigation=0 \
     --touch-events=enabled \
-    --ozone-platform-hint=auto \
     --autoplay-policy=no-user-gesture-required \
     --check-for-update-interval=31536000 \
     --password-store=basic \
