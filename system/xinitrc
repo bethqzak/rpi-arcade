@@ -15,4 +15,8 @@ if command -v matchbox-window-manager >/dev/null 2>&1; then
     sleep 0.3
 fi
 
+# Hide the pointer: X moves a cursor under every touch, which a desktop
+# would hide for us. unclutter hides it as soon as it stops moving.
+command -v unclutter >/dev/null 2>&1 && unclutter -idle 0.2 -root &
+
 exec ./run.sh

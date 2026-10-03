@@ -74,7 +74,7 @@ fi
 # --- kiosk mode: no desktop ----------------------------------------------
 if [ "${1:-}" = "--kiosk" ]; then
     need=""
-    for pkg in xinit xserver-xorg x11-xserver-utils matchbox-window-manager; do
+    for pkg in xinit xserver-xorg x11-xserver-utils matchbox-window-manager unclutter; do
         dpkg -s "$pkg" >/dev/null 2>&1 || need="$need $pkg"
     done
     if [ -n "$need" ]; then
