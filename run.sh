@@ -40,9 +40,15 @@ mkdir -p "$PROFILE" "$(dirname "$LOG")"
 # adds the flags that force the GPU past the blocklist (what the old arcade
 # always did); a GPU driver that hangs takes the whole Pi down, so that is
 # opt-in. When the GPU works these flags take precedence over SwiftShader.
+# Left to itself chromium reaches the Pi's GPU through Vulkan, which the
+# Pi's Vulkan driver can't satisfy ("shaderUniform*ArrayDynamicIndexing
+# required" in the log), so it silently falls back to software anyway.
+# OpenGL ES is the path that works on this GPU: --use-angle=gles.
 GPU_FLAGS=""
+DISABLE_FEATURES="TranslateUI"
 if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/rpi-arcade/gpu" ]; then
-    GPU_FLAGS="--ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy"
+    GPU_FLAGS="--ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy --use-gl=angle --use-angle=gles"
+    DISABLE_FEATURES="$DISABLE_FEATURES,Vulkan,DefaultANGLEVulkan,VulkanFromANGLE"
 fi
 
 # --ozone-platform-hint=auto: talk to a Wayland desktop (Ubuntu's GNOME)
@@ -64,7 +70,7 @@ exec "$BROWSER" \
     --autoplay-policy=no-user-gesture-required \
     --check-for-update-interval=31536000 \
     --password-store=basic \
-    --disable-features=TranslateUI \
+    --disable-features="$DISABLE_FEATURES" \
     --enable-unsafe-swiftshader \
     $GPU_FLAGS \
     "$URL" >>"$LOG" 2>&1
