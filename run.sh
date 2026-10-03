@@ -28,9 +28,18 @@ PROFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rpi-arcade/profile"
 LOG="${XDG_CACHE_HOME:-$HOME/.cache}/rpi-arcade/chromium.log"
 mkdir -p "$PROFILE" "$(dirname "$LOG")"
 
-# No GPU flags: Raspberry Pi OS's chromium uses the Pi's GPU (V3D) for
-# WebGL on its own. Forcing it (--ignore-gpu-blocklist) is what the old
-# arcade did, and a forced GPU path that hangs is a reboot, not a crash.
+# WebGL: chromium blocklists the Pi's GPU and, without the SwiftShader
+# flag, then gives pages no WebGL at all, so the 3D games can't start.
+# SwiftShader is WebGL in software: always works, slow. "install.sh --gpu"
+# adds the flags that force the GPU past the blocklist (what the old arcade
+# always did); a GPU driver that hangs takes the whole Pi down, so that is
+# opt-in. When the GPU works these flags take precedence over SwiftShader.
+GPU_FLAGS=""
+if [ -f "${XDG_CONFIG_HOME:-$HOME/.config}/rpi-arcade/gpu" ]; then
+    GPU_FLAGS="--ignore-gpu-blocklist --enable-gpu-rasterization --enable-zero-copy"
+fi
+
+# shellcheck disable=SC2086  # GPU_FLAGS expands to words on purpose
 exec "$BROWSER" \
     --kiosk \
     --user-data-dir="$PROFILE" \
@@ -45,4 +54,6 @@ exec "$BROWSER" \
     --check-for-update-interval=31536000 \
     --password-store=basic \
     --disable-features=TranslateUI \
+    --enable-unsafe-swiftshader \
+    $GPU_FLAGS \
     "$URL" >>"$LOG" 2>&1
